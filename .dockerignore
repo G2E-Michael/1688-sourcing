@@ -1,0 +1,9 @@
+.git
+.github
+out
+__pycache__
+*.pyc
+.venv
+*_images
+*.xlsx
+_data

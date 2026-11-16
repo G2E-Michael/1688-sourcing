@@ -57,6 +57,28 @@ powershell -File .\install.ps1 -Target workbuddy   # 只装 WorkBuddy
 powershell -File .\install.ps1 -Target both -Force # 覆盖已有安装
 ```
 
+## Docker / Codespaces（没有本机 Chrome 的场合）
+
+镜像由 GitHub Actions 构建并推到 GHCR，**不需要本地装 Docker 去构建**：
+
+```bash
+# 一次性登录（二维码打印在终端，用 1688 App 扫）
+docker run -it --rm -v "$PWD/data:/data" ghcr.io/g2e-michael/1688-sourcing login --headed
+
+# 关键词
+docker run --rm -v "$PWD/data:/data" \
+  ghcr.io/g2e-michael/1688-sourcing keyword "硅胶折叠水杯" --max 12 --top 6 --out /data/keyword.xlsx
+
+# 图搜（把产品图放到 ./pics）
+docker run --rm -v "$PWD/data:/data" -v "$PWD/pics:/pics" \
+  ghcr.io/g2e-michael/1688-sourcing image /pics/cup.jpg --max 30 --top 8 --out /data/image.xlsx
+```
+
+- 登录态在卷里的 `/data/profile`，不挂卷每次都要重新扫码。
+- 镜像内是 Playwright Chromium（`BB1688_FORCE_CHROMIUM=1`），指纹与真实 Chrome 不同，**触发滑块的概率更高**；能本机跑就用本机。
+- 首次构建完成后需把 GHCR 包设为 public，否则 `docker pull` 需要先 `docker login ghcr.io`。
+- Codespaces 里可直接 `docker run`，但同样建议挂持久卷。
+
 ## 输出结构
 
 一个 xlsx，两张表，图片以 JPEG 300px 长边嵌入单元格：
